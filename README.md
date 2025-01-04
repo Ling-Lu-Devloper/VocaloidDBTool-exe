@@ -1,41 +1,21 @@
-# Canned-Bread's VOCALOIDDBTOOL Swiss Army Knife
+# Canned-Bread's VOCALOIDDBTOOL Swiss Army Knife汉化打包项目
+此项目叉自VOCALOIDDBTOOL-SAK，由凌鹿汉化、打包。
+添加了启动界面以及启动音效，修改了部分代码
+使用 pyinstaller 打包
 
-# UPDATE ON THE TOOL!
+Canned-Bread 的 VOCALOIDDBTOOL ，它允许你为 HOMEBREW VOCALOID 开发做一些非常酷的事情！
 
-Since other tools are better and more useful, I decided to archive this tool since I'm not working in the vocal synth space anymore... Sorry...
+使用一个GENON2NNSVS from https://github.com/oatsu-gh/genon2nnsvs
 
-Canned-Bread's VOCALOIDDBTOOL Swiss Army Knife, which allows you to do some pretty cool things for HOMEBREW VOCALOID development!
+同时使用auto_trans    https://github.com/EgorV4/auto-trans
 
-Uses a modded Genon2NNSVS from https://github.com/oatsu-gh/genon2nnsvs
+使用 https://github.com/rdbende/Forest-ttk-theme
 
-Also uses a modded Auto-Trans from https://github.com/EgorV4/auto-trans
+# 如何下载
+在release中下载压缩包，解压即可，table文件在压缩包中
 
-Uses https://github.com/rdbende/Forest-ttk-theme
+# 如何运行
 
-# HOW TO RUN
-
-Have python 3.10 installed https://www.python.org/downloads/release/python-3100/
-
-Have requirements pydub==0.25.1 and utaupy==1.18.3 installed 
-
-
-`pip install pydub==0.25.1 utaupy==1.18.3`
-
-Run GUI.py and select what you'd like to do
-
-
-Please let me know if anything needs changes!
-
-DOWNLOAD FROM RELEASES IT HAS ALL FILES NEEDED!
-
-# HOW TO UPDATE
-
-Download the code in a zip and replace the python files
-
-Here's a screenshot:
-![image](https://github.com/bread-in-a-can/Canned-Bread-s-VOCALOIDDBTOOL-Swiss-Army-Knife/assets/124006393/7b2edccf-2bfe-47c6-b1e7-723d076b7661)
-
-
-
+双击EXE文件即可运行
 
 Yamaha plz don't kill me
