@@ -1,6 +1,10 @@
 import tkinter as tk
 from tkinter import ttk
+from PIL import Image, ImageTk
+import simpleaudio as sa
+import threading
 import subprocess
+
 import os
 import sys
 
@@ -10,7 +14,16 @@ def resource_path(relative_path):
 	else:
 		base_path = os.path.abspath(".")
 	return os.path.join(base_path, relative_path)
-
+	
+def play_audio(file_path):
+	#播放音频文件（在单独的线程中运行）
+	try:
+		wave_obj = sa.WaveObject.from_wave_file(file_path)  # 加载音频文件
+		play_obj = wave_obj.play()  # 播放音频
+		play_obj.wait_done()  # 等待音频播放完成
+	except Exception as e:
+		print(f"Failed to play audio: {e}")
+	
 def run_script(script_path):
 	try:
 		process = subprocess.Popen(script_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, universal_newlines=True)
@@ -26,7 +39,7 @@ def open_main_window():
 	main_window()
 
 def splash_screen():
-	global splash
+	global splash, img_tk  # 保存 img_tk 为全局变量
 	splash = tk.Tk()
 	splash.title("")
 	splash.overrideredirect(True)  # 去掉程序框
@@ -41,31 +54,48 @@ def splash_screen():
 	canvas = tk.Canvas(splash, width=window_width, height=window_height, bg='white', highlightthickness=0)
 	canvas.pack()
 
+	# 获取图像路径
 	img_path = resource_path("VDBT.ico")
+	print(f"Loading image from: {img_path}")  # 打印图像路径，用于调试
+
+	# 检查图像文件是否存在
 	if not os.path.exists(img_path):
 		raise FileNotFoundError(f"Image file not found: {img_path}")
-	img = Image.open(img_path)  # 替换为你的启动画面图片文件名
-	img = img.resize((230, 230), Image.LANCZOS)
-	img = ImageTk.PhotoImage(img)
 
-	canvas.create_image(window_width/2, window_height/2, image=img, anchor=tk.CENTER)
-	
-	#播放启动音频
-	audio_path = resource_path(start_sound.wav)
+	# 打开图像并转换为 Tkinter 图像对象
+	try:
+		img = Image.open(img_path)  # 打开图像
+		img = img.resize((230, 230), Image.LANCZOS)  # 调整图像大小
+		img = img.convert("RGB")  # 将图像转换为 RGB 模式
+		img_tk = ImageTk.PhotoImage(img)  # 转换为 Tkinter 图像对象
+
+		# 将图像对象保存为 splash 的属性，避免被垃圾回收
+		splash.img_tk = img_tk
+
+		# 在画布上显示图像
+		canvas.create_image(window_width / 2, window_height / 2, image=img_tk, anchor=tk.CENTER)
+	except Exception as e:
+		print(f"Failed to load image: {e}")  # 打印错误信息，用于调试
+		return  # 如果图像加载失败，退出函数
+
+	# 播放启动音频
+	audio_path = resource_path("start_sound.wav")
 	if os.path.exists(audio_path):
-		playsound(audio_path)
+		# 创建一个新线程来播放音频
+		audio_thread = threading.Thread(target=play_audio, args=(audio_path,))
+		audio_thread.start()  # 启动线程
 	else:
 		print(f"Audio file not found: {audio_path}")
-		
-	splash.after(5000, open_main_window)  # 2秒后关闭启动画面并打开主程序窗口
+
+	splash.after(3000, open_main_window)  # 5秒后关闭启动画面并打开主程序窗口
 	splash.mainloop()
 
-# Create the main application window
-root = tk.Tk()
-root.title("Canned_Bread's VOCALOIDDBTOOL Swiss Army Knife--凌鹿汉化ver")
-root.geometry("900x700")  # Set the initial window size
-
 def main_window():
+	#创建主窗口
+	root = tk.Tk()
+	root.title("Canned_Bread's VOCALOIDDBTOOL Swiss Army Knife--凌鹿汉化ver")
+	root.geometry("900x700")
+	
 # Make the app responsive
 	for i in range(3):
 		root.columnconfigure(index=i, weight=1)
