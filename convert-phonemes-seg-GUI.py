@@ -1,10 +1,18 @@
 import os
+import sys
 import json
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
 
+def resource_path(relative_path):
+    if hasattr(sys, '_MEIPASS'):
+        base_path = sys._MEIPASS
+    else:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+	
 # Load the phoneme JSON data
 script_directory = os.path.dirname(os.path.abspath(__file__))
 phonemes_json_path = os.path.join(script_directory, 'phonemes.json')
@@ -66,7 +74,7 @@ def convert_files():
     directory = directory_entry.get()
 
     if not directory:
-        messagebox.showerror("Error", "Please select a directory.")
+        messagebox.showerror("错误", "请选择一个目录.")
         return
 
     for filename in os.listdir(directory):
@@ -74,7 +82,7 @@ def convert_files():
             input_path = os.path.join(directory, filename)
             process_seg_file(input_path)
 
-    messagebox.showinfo("Success", "Conversion complete.")
+    messagebox.showinfo("成功", "转换完成.")
 
 # Create the main application window
 root = tk.Tk()
@@ -84,7 +92,7 @@ root.title("SEG File Conversion")
 style = ttk.Style(root)
 
 # Import the tcl file
-root.tk.call("source", "./Forest-ttk-theme-1.0/forest-dark.tcl")
+root.tk.call("source", resource_path("./Forest-ttk-theme-1.0/forest-dark.tcl"))
 
 # Set the theme with the theme_use method
 style.theme_use("forest-dark")
@@ -94,17 +102,17 @@ input_frame = ttk.Frame(root, padding=10)
 input_frame.grid(row=0, column=0, padx=10, pady=10, sticky='w')
 
 # Directory selection
-directory_label = ttk.Label(input_frame, text='Select Directory:')
+directory_label = ttk.Label(input_frame, text='选择目录:')
 directory_label.grid(row=0, column=0, sticky='w')
 
 directory_entry = ttk.Entry(input_frame, width=40)
 directory_entry.grid(row=0, column=1, padx=(5, 0), sticky='w')
 
-directory_button = ttk.Button(input_frame, text='Browse', command=browse_directory)
+directory_button = ttk.Button(input_frame, text='浏览', command=browse_directory)
 directory_button.grid(row=0, column=2, padx=(5, 0), sticky='w')
 
 # Convert button
-convert_button = ttk.Button(root, text='Convert SEG Files', command=convert_files)
+convert_button = ttk.Button(root, text='转换 SEG 文件', command=convert_files)
 convert_button.grid(row=1, column=0, padx=10, pady=10)
 
 # Start the GUI application

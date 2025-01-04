@@ -1,9 +1,17 @@
 import os
+import sys
 import argparse
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
+
+def resource_path(relative_path):
+    if hasattr(sys, '_MEIPASS'):
+        base_path = sys._MEIPASS
+    else:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 def load_segments(seg_file):
     segments = []
@@ -65,7 +73,7 @@ def transfer_phonemes(seg_folder1, seg_folder2, out_folder):
                     phoneme2, begin_time2, end_time2 = segment2
                     outfile.write(f"{phoneme2}\t{begin_time2:.6f}\t{end_time2:.6f}\n")
 
-        print(f"Transferred phonemes from {seg_file1} to {seg_file2} and saved in {out_file}")
+        print(f"已将音素 从{seg_file1} 转移到 {seg_file2} 并保存在 {out_file}")
 
 def browse_folder1():
     directory = filedialog.askdirectory()
@@ -91,21 +99,21 @@ def convert_phonemes():
     output_folder = output_folder_entry.get()
 
     if not os.path.exists(folder1) or not os.path.exists(folder2):
-        messagebox.showerror("Error", "Input folders do not exist.")
+        messagebox.showerror("错误", "输入的文件夹不存在.")
         return
 
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
     transfer_phonemes(folder1, folder2, output_folder)
-    messagebox.showinfo("Success", "Conversion complete.")
+    messagebox.showinfo("成功", "转换完成.")
 
 # Create the main application window
 root = tk.Tk()
-root.title("Phoneme Transfer")
+root.title("音素转移器")
 
 # Import the tcl file
-root.tk.call("source", "./Forest-ttk-theme-1.0/forest-dark.tcl")
+root.tk.call("source", resource_path("./Forest-ttk-theme-1.0/forest-dark.tcl"))
 
 # Set the theme with the theme_use method
 style = ttk.Style()
@@ -116,37 +124,37 @@ input_frame = ttk.Frame(root, padding=10)
 input_frame.grid(row=0, column=0, padx=10, pady=10, sticky='w')
 
 # Folder 1
-folder1_label = ttk.Label(input_frame, text='Folder 1 (Donor):')
+folder1_label = ttk.Label(input_frame, text='文件夹一 (Donor):')
 folder1_label.grid(row=0, column=0, sticky='w')
 
 folder1_entry = ttk.Entry(input_frame, width=40)
 folder1_entry.grid(row=0, column=1, padx=(5, 0), sticky='w')
 
-folder1_button = ttk.Button(input_frame, text='Browse', command=browse_folder1)
+folder1_button = ttk.Button(input_frame, text='浏览', command=browse_folder1)
 folder1_button.grid(row=0, column=2, padx=(5, 0), sticky='w')
 
 # Folder 2
-folder2_label = ttk.Label(input_frame, text='Folder 2 (Receiver):')
+folder2_label = ttk.Label(input_frame, text='文件夹2 (Receiver):')
 folder2_label.grid(row=1, column=0, sticky='w')
 
 folder2_entry = ttk.Entry(input_frame, width=40)
 folder2_entry.grid(row=1, column=1, padx=(5, 0), sticky='w')
 
-folder2_button = ttk.Button(input_frame, text='Browse', command=browse_folder2)
+folder2_button = ttk.Button(input_frame, text='浏览', command=browse_folder2)
 folder2_button.grid(row=1, column=2, padx=(5, 0), sticky='w')
 
 # Output folder
-output_folder_label = ttk.Label(input_frame, text='Output Folder:')
+output_folder_label = ttk.Label(input_frame, text='输出文件夹:')
 output_folder_label.grid(row=2, column=0, sticky='w')
 
 output_folder_entry = ttk.Entry(input_frame, width=40)
 output_folder_entry.grid(row=2, column=1, padx=(5, 0), sticky='w')
 
-output_folder_button = ttk.Button(input_frame, text='Browse', command=browse_output_folder)
+output_folder_button = ttk.Button(input_frame, text='浏览', command=browse_output_folder)
 output_folder_button.grid(row=2, column=2, padx=(5, 0), sticky='w')
 
 # Convert button
-convert_button = ttk.Button(root, text='Transfer Phonemes', command=convert_phonemes)
+convert_button = ttk.Button(root, text='转移音素', command=convert_phonemes)
 convert_button.grid(row=1, column=0, padx=10, pady=10)
 
 # Start the GUI application

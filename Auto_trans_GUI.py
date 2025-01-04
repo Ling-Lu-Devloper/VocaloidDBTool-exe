@@ -1,17 +1,26 @@
 import tkinter as tk
 from tkinter import ttk
+import sys
+import os
 import subprocess
 import glob
 import json
 from tkinter import filedialog  # Import filedialog
 from os import path
 
+def resource_path(relative_path):
+    if hasattr(sys, '_MEIPASS'):
+        base_path = sys._MEIPASS
+    else:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
 # Create a tkinter window
 root = tk.Tk()
 root.title("Auto-trans")
 
 # Import the tcl file for the Forest theme
-root.tk.call("source", "./Forest-ttk-theme-1.0/forest-dark.tcl")
+root.tk.call("source", resource_path("./Forest-ttk-theme-1.0/forest-dark.tcl"))
 
 # Set the theme with the theme_use method
 style = ttk.Style(root)
@@ -31,7 +40,7 @@ def run_auto_trans():
     wav_path = wav_path + "\\"
     wav_files = glob.glob(f'{wav_path}*.wav')
     
-    creating_ask = trans_check_var.get()
+    creating_ask = trans_check_var.get()  
     auto_creating = False
     if creating_ask:
         auto_creating = True
@@ -77,12 +86,12 @@ def run_auto_trans():
                     break
 
         trans_file.close()
-    
+
     result_text.config(state=tk.NORMAL)
     result_text.delete("1.0", tk.END)
-    result_text.insert(tk.END, "Process Completed!")
+    result_text.insert(tk.END, "进程已完成!")
     result_text.config(state=tk.DISABLED)
-
+        
 def browse_wav_directory():
     wav_directory = filedialog.askdirectory()  # Open directory dialog
     wav_entry.delete(0, tk.END)  # Clear any previous input
@@ -93,19 +102,19 @@ auto_trans_page = tk.Frame(root)
 auto_trans_page.pack(padx=20, pady=20)
 
 # Create a label and entry for the wav directory
-wav_label = tk.Label(auto_trans_page, text="Enter wav directory:")
+wav_label = tk.Label(auto_trans_page, text="输入 wav 目录:")
 wav_label.pack()
 wav_entry = tk.Entry(auto_trans_page)
 wav_entry.pack()
-browse_button = ttk.Button(auto_trans_page, text="Browse", command=browse_wav_directory)
+browse_button = ttk.Button(auto_trans_page, text="浏览", command=browse_wav_directory)
 browse_button.pack()
 
 # Create a checkbox for transcription writing
-trans_check = ttk.Checkbutton(auto_trans_page, text="Write transcriptions automatically", variable=trans_check_var)
+trans_check = ttk.Checkbutton(auto_trans_page, text="自动编写转录", variable=trans_check_var)
 trans_check.pack()
 
 # Create a "Run" button
-run_button = ttk.Button(auto_trans_page, text="Run Auto-trans Script", command=run_auto_trans)
+run_button = ttk.Button(auto_trans_page, text="运行 Auto-trans 脚本", command=run_auto_trans)
 run_button.pack()
 
 # Create a text widget for the script output

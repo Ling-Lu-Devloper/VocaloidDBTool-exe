@@ -1,4 +1,6 @@
 import tkinter as tk
+import os
+import sys
 from tkinter import ttk, filedialog
 import utaupy as up
 from os.path import abspath, basename, dirname, isdir, join
@@ -14,6 +16,13 @@ NOTENAME_TO_NOTENUM_DICT = {
     "C5": 72
 }
 
+def resource_path(relative_path):
+    if hasattr(sys, '_MEIPASS'):
+        base_path = sys._MEIPASS
+    else:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
 class USTGeneratorApp:
     def __init__(self, root):
         self.root = root
@@ -21,7 +30,7 @@ class USTGeneratorApp:
         self.style = ttk.Style(self.root)
 
         # Import the tcl file for the Forest theme
-        self.root.tk.call("source", "./Forest-ttk-theme-1.0/forest-dark.tcl")
+        self.root.tk.call("source", resource_path("./Forest-ttk-theme-1.0/forest-dark.tcl"))
 
         # Set the theme with the theme_use method
         self.style.theme_use("forest-dark")
@@ -44,34 +53,34 @@ class USTGeneratorApp:
         self.output_console.see(tk.INSERT)
 
     def create_widgets(self):
-        self.label1 = ttk.Label(self.frame, text="Original Configuration File:")
+        self.label1 = ttk.Label(self.frame, text="原始oto文件:")
         self.label1.grid(row=0, column=0, sticky="w")
 
         self.otoini_path = tk.StringVar()
         self.otoini_entry = ttk.Entry(self.frame, textvariable=self.otoini_path)
         self.otoini_entry.grid(row=0, column=1, padx=10)
 
-        self.browse_otoini_button = ttk.Button(self.frame, text="Browse", command=self.browse_otoini)
+        self.browse_otoini_button = ttk.Button(self.frame, text="浏览", command=self.browse_otoini)
         self.browse_otoini_button.grid(row=0, column=2)
 
-        self.label4 = ttk.Label(self.frame, text="Table File:")
+        self.label4 = ttk.Label(self.frame, text="Table 文件:")
         self.label4.grid(row=1, column=0, sticky="w")
 
         self.table_path = tk.StringVar()
         self.table_entry = ttk.Entry(self.frame, textvariable=self.table_path)
         self.table_entry.grid(row=1, column=1, padx=10)
 
-        self.browse_table_button = ttk.Button(self.frame, text="Browse", command=self.browse_table)
+        self.browse_table_button = ttk.Button(self.frame, text="凌鹿", command=self.browse_table)
         self.browse_table_button.grid(row=1, column=2)
 
-        self.label6 = ttk.Label(self.frame, text="Output Directory:")
+        self.label6 = ttk.Label(self.frame, text="输出目录:")
         self.label6.grid(row=2, column=0, sticky="w")
 
         self.output_dir_path = tk.StringVar()
         self.output_dir_entry = ttk.Entry(self.frame, textvariable=self.output_dir_path)
         self.output_dir_entry.grid(row=2, column=1, padx=10)
 
-        self.browse_output_dir_button = ttk.Button(self.frame, text="Browse", command=self.browse_output_dir)
+        self.browse_output_dir_button = ttk.Button(self.frame, text="浏览", command=self.browse_output_dir)
         self.browse_output_dir_button.grid(row=2, column=2)
 
         self.label2 = ttk.Label(self.frame, text="Tempo:")
@@ -81,7 +90,7 @@ class USTGeneratorApp:
         self.tempo_entry = ttk.Entry(self.frame, textvariable=self.tempo)
         self.tempo_entry.grid(row=3, column=1, padx=10)
 
-        self.label3 = ttk.Label(self.frame, text="Initial Pause Length in beats (put auto for auto estimation):")
+        self.label3 = ttk.Label(self.frame, text="初始暂停长度（以节拍为单位）（输入 auto 进行自动估计）:")
         self.label3.grid(row=4, column=0, sticky="w")
 
         self.pause_length = tk.StringVar()
@@ -96,19 +105,19 @@ class USTGeneratorApp:
         self.note_entry.grid(row=5, column=1, padx=10)
 
         self.uta_vcv = tk.BooleanVar()
-        self.uta_vcv_checkbox = ttk.Checkbutton(self.frame, text="Song Continuous Phoneme Recording (UTA VCV Mode)",
+        self.uta_vcv_checkbox = ttk.Checkbutton(self.frame, text="歌曲连续音素录制（UTA VCV 模式）",
                                                variable=self.uta_vcv)
         self.uta_vcv_checkbox.grid(row=6, column=1)
 
-        self.generate_button = ttk.Button(self.frame, text="Generate DB", command=self.generate_ust)
+        self.generate_button = ttk.Button(self.frame, text="生成 DB", command=self.generate_ust)
         self.generate_button.grid(row=7, column=0, columnspan=3)
 
     def browse_otoini(self):
-        otoini_path = filedialog.askopenfilename(filetypes=[("oto.ini files", "*.ini")])
+        otoini_path = filedialog.askopenfilename(filetypes=[("oto.ini 文件", "*.ini")])
         self.otoini_path.set(otoini_path)
 
     def browse_table(self):
-        table_path = filedialog.askopenfilename(filetypes=[("Table files", "*.table")])
+        table_path = filedialog.askopenfilename(filetypes=[("Table 文件", "*.table")])
         self.table_path.set(table_path)
 
     def browse_output_dir(self):
@@ -166,7 +175,7 @@ class USTGeneratorApp:
                 pause_length_by_beat = int(pause_length_by_beat)
                 note.length = int(pause_length_by_beat * 480)
             except ValueError:
-                print("Invalid pause length. Please enter a valid number or 'auto'.")
+                print("无效的暂停长度。请输入有效数字或“auto”.")
         ust.notes.append(note)
 
         for oto in otoini:
@@ -230,7 +239,7 @@ class USTGeneratorApp:
             mono_label.write(join(out_dir, 'lab', f'{name}.lab'))
             copy(join(dirname(path_otoini), f'{name}.wav'), join(out_dir, 'wav', f'{name}.wav'))
 
-        print('UST and label files generated successfully.')
+        print('UST 和lable文件生成成功.')
 
     def load_table_file(self, path_table):
         table = {}
@@ -249,7 +258,7 @@ class USTGeneratorApp:
             mono_label = up.label.load(path_mono)
             full_label = up.label.load(path_full)
             if len(mono_label) != len(full_label):
-                print(f"Error: Mismatch in the number of phonemes in {basename(path_mono)}")
+                print(f"错误: {basename(path_mono)} 中音素数量不匹配")
                 continue
             for mono_phoneme, full_phoneme in zip(mono_label, full_label):
                 mono_phoneme.symbol = full_phoneme.symbol
@@ -257,7 +266,7 @@ class USTGeneratorApp:
             mono_label.data = [phoneme for phoneme in mono_label.data if phoneme.symbol != 'sil' and phoneme.symbol.strip()]
             mono_label.write(path_mono)
 
-        print('Mono-label files converted to full-label files and rounded.')
+        print('单标签文件已转换成全标签文件并四舍五入.')
 
     def guess_notename_from_prefix(self, prefix, d_notename2notenum):
         notenames = d_notename2notenum.keys()
@@ -276,13 +285,13 @@ class USTGeneratorApp:
         notename = self.note.get()
         uta_vcv_mode = self.uta_vcv.get()
 
-        self.update_output_console('Converting oto.ini to label files and UST files and copying WAV files.\n')
+        self.update_output_console('正在将 oto.ini 转换为标签文件和 UST 文件并复制 WAV 文件。\n')
         self.generate_labfile(path_otoini, path_table, out_dir, tempo, notename, uta_vcv_mode, pause_length)
 
-        self.update_output_console('Converting mono-label files to full-label files and rounding them.\n')
+        self.update_output_console('正在将单标签文件转换为全标签文件并四舍五入。\n')
         self.mono2full_and_round(join(out_dir, 'lab'), out_dir, prefix)
 
-        self.update_output_console(f'All files were successfully saved to {abspath(out_dir)}\n')
+        self.update_output_console(f'所有文件成功保存到 {abspath(out_dir)}\n')
 
 if __name__ == '__main__':
     root = tk.Tk()

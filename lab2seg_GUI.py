@@ -6,6 +6,14 @@ from tkinter import messagebox
 
 import argparse
 import re
+import sys
+
+def resource_path(relative_path):
+    if hasattr(sys, '_MEIPASS'):
+        base_path = sys._MEIPASS
+    else:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 def convert_lab_to_seg(input_directory, output_directory):
     # Create the output directory if it doesn't exist
@@ -53,11 +61,11 @@ def convert_lab_to_seg(input_directory, output_directory):
                     for phoneme, start_time, end_time in phoneme_list:
                         outfile.write("{}\t\t{:.6f}\t\t{:.6f}\n".format(phoneme, start_time, end_time))
 
-                print("Conversion complete for", lab_file_name)
+                print("转换完成", lab_file_name)
             else:
-                print("Skipping empty file:", lab_file_name)
+                print("跳过空文件:", lab_file_name)
 
-    print("All conversions complete.")
+    print("所有转换完成")
 
 def browse_input_directory():
     directory = filedialog.askdirectory()
@@ -76,21 +84,21 @@ def convert_lab_files():
     output_directory = output_directory_entry.get()
 
     if not os.path.exists(input_directory):
-        messagebox.showerror("Error", "Input directory does not exist.")
+        messagebox.showerror("错误", "输入目录不存在")
         return
 
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
 
     convert_lab_to_seg(input_directory, output_directory)
-    messagebox.showinfo("Success", "Conversion complete.")
+    messagebox.showinfo("成功", "转换完成")
 
 # Create the main application window
 root = tk.Tk()
-root.title("Lab to Seg Converter")
+root.title("Lab -> Seg转换器")
 
 # Import the tcl file
-root.tk.call("source", "./Forest-ttk-theme-1.0/forest-dark.tcl")
+root.tk.call("source", resource_path("./Forest-ttk-theme-1.0/forest-dark.tcl"))
 
 # Set the theme with the theme_use method
 style = ttk.Style()
@@ -101,27 +109,27 @@ input_frame = ttk.Frame(root, padding=10)
 input_frame.grid(row=0, column=0, padx=10, pady=10, sticky='w')
 
 # Input directory
-input_directory_label = ttk.Label(input_frame, text='Input Directory:')
+input_directory_label = ttk.Label(input_frame, text='输入目录:')
 input_directory_label.grid(row=0, column=0, sticky='w')
 
 input_directory_entry = ttk.Entry(input_frame, width=40)
 input_directory_entry.grid(row=0, column=1, padx=(5, 0), sticky='w')
 
-input_directory_button = ttk.Button(input_frame, text='Browse', command=browse_input_directory)
+input_directory_button = ttk.Button(input_frame, text='浏览', command=browse_input_directory)
 input_directory_button.grid(row=0, column=2, padx=(5, 0), sticky='w')
 
 # Output directory
-output_directory_label = ttk.Label(input_frame, text='Output Directory:')
+output_directory_label = ttk.Label(input_frame, text='输出目录:')
 output_directory_label.grid(row=1, column=0, sticky='w')
 
 output_directory_entry = ttk.Entry(input_frame, width=40)
 output_directory_entry.grid(row=1, column=1, padx=(5, 0), sticky='w')
 
-output_directory_button = ttk.Button(input_frame, text='Browse', command=browse_output_directory)
+output_directory_button = ttk.Button(input_frame, text='浏览', command=browse_output_directory)
 output_directory_button.grid(row=1, column=2, padx=(5, 0), sticky='w')
 
 # Convert button
-convert_button = ttk.Button(root, text='Convert', command=convert_lab_files)
+convert_button = ttk.Button(root, text='转换', command=convert_lab_files)
 convert_button.grid(row=1, column=0, padx=10, pady=10)
 
 # Start the GUI application
