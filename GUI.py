@@ -4,7 +4,7 @@ from PIL import Image, ImageTk
 import simpleaudio as sa
 import threading
 import subprocess
-
+import ctypes #任务栏图标设置使用
 import os
 import sys
 
@@ -14,12 +14,12 @@ def resource_path(relative_path):
 	else:
 		base_path = os.path.abspath(".")
 	return os.path.join(base_path, relative_path)
-	
+
 def play_audio(file_path):
 	#播放音频文件（在单独的线程中运行）
 	try:
-		wave_obj = sa.WaveObject.from_wave_file(file_path)  # 加载音频文件
-		play_obj = wave_obj.play()  # 播放音频
+		wave_obj = sa.WaveObject.from_wave_file(file_path)	# 加载音频文件
+		play_obj = wave_obj.play()	# 播放音频
 		play_obj.wait_done()  # 等待音频播放完成
 	except Exception as e:
 		print(f"Failed to play audio: {e}")
@@ -33,10 +33,6 @@ def run_script(script_path):
 		return stdout
 	except Exception as e:
 		return f"Exception: {str(e)}"
-
-def open_main_window():
-	splash.destroy()
-	main_window()
 
 def splash_screen():
 	global splash, img_tk  # 保存 img_tk 为全局变量
@@ -53,48 +49,59 @@ def splash_screen():
 
 	canvas = tk.Canvas(splash, width=window_width, height=window_height, bg='white', highlightthickness=0)
 	canvas.pack()
-
-	# 获取图像路径
-	img_path = resource_path("VDBT.ico")
-	print(f"Loading image from: {img_path}")  # 打印图像路径，用于调试
-
-	# 检查图像文件是否存在
-	if not os.path.exists(img_path):
-		raise FileNotFoundError(f"Image file not found: {img_path}")
-
-	# 打开图像并转换为 Tkinter 图像对象
-	try:
-		img = Image.open(img_path)  # 打开图像
-		img = img.resize((230, 230), Image.LANCZOS)  # 调整图像大小
-		img = img.convert("RGB")  # 将图像转换为 RGB 模式
-		img_tk = ImageTk.PhotoImage(img)  # 转换为 Tkinter 图像对象
-
-		# 将图像对象保存为 splash 的属性，避免被垃圾回收
-		splash.img_tk = img_tk
-
-		# 在画布上显示图像
-		canvas.create_image(window_width / 2, window_height / 2, image=img_tk, anchor=tk.CENTER)
-	except Exception as e:
-		print(f"Failed to load image: {e}")  # 打印错误信息，用于调试
-		return  # 如果图像加载失败，退出函数
-
-	# 播放启动音频
-	audio_path = resource_path("start_sound.wav")
-	if os.path.exists(audio_path):
-		# 创建一个新线程来播放音频
-		audio_thread = threading.Thread(target=play_audio, args=(audio_path,))
-		audio_thread.start()  # 启动线程
-	else:
-		print(f"Audio file not found: {audio_path}")
-
-	splash.after(3000, open_main_window)  # 5秒后关闭启动画面并打开主程序窗口
+	
+	# 异步加载资源
+	def load_resources():
+		#加载图像
+		img_path = resource_path("VDBT256.png")
+		if os.path.exists(img_path):
+			img = Image.open(img_path)
+			img = img.resize((256,256),Image.LANCZOS)
+			img = img.convert("RGB")
+			global img_tk
+			img_tk = ImageTk.PhotoImage(img)
+			splash.img_tk = img_tk
+			canvas.create_image(window_width / 2, window_height / 2, image=img_tk, anchor=tk.CENTER)
+			
+		#播放音频
+		audio_path = resource_path("start_sound.wav")
+		if os.path.exists(audio_path):
+			audio_thread = threading.Thread(target=play_audio, args=(audio_path,))
+			audio_thread.start()
+			
+	#启动资源加载线程
+	resource_thread = threading.Thread(target=load_resources)
+	resource_thread.start()
+	
+	#加载第二音效并打开主窗口
+	def load_audio2_resources():
+		audio_path_2 = resource_path("start_sound_2.wav")
+		if os.path.exists(audio_path_2):
+			# 播放第二个音效
+			audio_thread_2 = threading.Thread(target=play_audio, args=(audio_path_2,))
+			audio_thread_2.start()
+			splash.after(1000, main_window) #延迟一秒后打开主窗口
+			splash.after(1100, splash.destroy) # 关闭启动界面
+			
+	splash.after(3000, load_audio2_resources)  # 5秒后关闭启动画面并打开主程序窗口
+	
+	# 启动事件循环
 	splash.mainloop()
-
+	
 def main_window():
-	#创建主窗口
+	# 创建主窗口
 	root = tk.Tk()
 	root.title("Canned_Bread's VOCALOIDDBTOOL Swiss Army Knife--凌鹿汉化ver")
 	root.geometry("900x700")
+	
+	# 设置窗口图标
+	icon_path = resource_path("VDBT.ico")
+	root.iconbitmap(icon_path)
+	
+	# 设置任务栏图标（Windows 专用）
+	if os.name == "nt":	 # 仅适用于 Windows 系统
+		ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("VDBT.Tool")	# 设置 AppUserModelID
+		root.iconbitmap(icon_path)
 	
 # Make the app responsive
 	for i in range(3):
@@ -158,7 +165,7 @@ def main_window():
 	trans_tools_description = ttk.Label(
 		trans_tools_page,
 		text="创建 Vocaloid 的第一步是 .trans 文件集合。在这里，您可以运行 Auto_Trans 来为您生成这些 （基于 WAV 文件名）\nTrans_converter 是一种工具，可以将您通过 auto_trans 获得的 Articulation .trans 转换为固定 .trans 文件（是的，它们不同）",
-		wraplength=400  # Adjust this value as needed to fit the text within the desired width
+		wraplength=400	# Adjust this value as needed to fit the text within the desired width
 	)
 	trans_tools_description.grid(row=2, column=1, pady=(0, 10), columnspan=3)
 
@@ -187,7 +194,7 @@ def main_window():
 
 	# Run button for "Your Script 2"
 	def run_your_script_2():
-		script_path = resource_path("lab2seg_GUI.exe")  
+		script_path = resource_path("lab2seg_GUI.exe")	
 		output = run_script(script_path)
 		oto_ini_output_text.config(state=tk.NORMAL)
 		oto_ini_output_text.delete("1.0", tk.END)
@@ -205,7 +212,7 @@ def main_window():
 	oto_ini_description = ttk.Label(
 		oto_ini_page,
 		text="Genon2DB 是一种工具，您可以在其中将 oto.ini 转换为 .lab 文件以进行下一步。nLab2Seg 是您将实验室文件转换为用于发音 .trans 文件的 seg 文件的地方（我需要为固定文件制作一个，因为它们也不同）。.",
-		wraplength=400  # Adjust this value as needed to fit the text within the desired width
+		wraplength=400	# Adjust this value as needed to fit the text within the desired width
 	)
 	oto_ini_description.grid(row=2, column=1, pady=(0, 10), columnspan=3)
 
@@ -219,7 +226,7 @@ def main_window():
 
 	# Run button for "Phoneme Grabber"
 	def run_phoneme_grabber():
-		script_path = resource_path("phoneme_grabber_GUI.exe")  
+		script_path = resource_path("phoneme_grabber_GUI.exe")	
 		output = run_script(script_path)
 		misc_tools_output_text.config(state=tk.NORMAL)
 		misc_tools_output_text.delete("1.0", tk.END)
@@ -231,7 +238,7 @@ def main_window():
 
 	# Run button for "Your Script 3" (Miscellaneous script 1)
 	def run_misc_script_1():
-		script_path = resource_path("convert_kana_GUI.exe")  
+		script_path = resource_path("convert_kana_GUI.exe")	 
 		output = run_script(script_path)
 		misc_tools_output_text.config(state=tk.NORMAL)
 		misc_tools_output_text.delete("1.0", tk.END)
@@ -285,7 +292,7 @@ def main_window():
 	misc_tools_description = ttk.Label(
 		misc_tools_page,
 		text="Phoneme Grabber 是一种工具，它可以从 oto.ini 文件中获取所有音素，并生成一个包含所有音素的文本文件。它对于编辑hiragana.json或phonemes.json很有用。nConvert Kana （lab） 是一个工具，可以将您实验室中的假名转换为用于创建 seg 的音素。nPhoneme transfer 是一个实验性脚本，它将音素从一个 seg 文件传输到另一个 seg 文件（当您的语音库具有许多音高，并且您希望时间不同但音素在一组 seg 文件中相同时）.",
-		wraplength=400  # Adjust this value as needed to fit the text within the desired width
+		wraplength=400	# Adjust this value as needed to fit the text within the desired width
 	)
 	misc_tools_description.grid(row=2, column=1, pady=(0, 10), columnspan=3)
 
