@@ -4,7 +4,6 @@ from PIL import Image, ImageTk
 import simpleaudio as sa
 import threading
 import subprocess
-import ctypes #任务栏图标设置使用
 import os
 import sys
 
@@ -33,7 +32,16 @@ def run_script(script_path):
 		return stdout
 	except Exception as e:
 		return f"Exception: {str(e)}"
-
+	
+def open_main_window():
+	def load_audio2_resources():
+		audio_path_2 = resource_path("start_sound_2.wav")
+		audio_thread_2 = threading.Thread(target=play_audio, args=(audio_path_2,))
+		audio_thread_2.start()
+		splash.after(1000, main_window)
+		splash.after(1500, splash.destroy)
+	load_audio2_resources()
+	
 def splash_screen():
 	global splash, img_tk  # 保存 img_tk 为全局变量
 	splash = tk.Tk()
@@ -74,16 +82,13 @@ def splash_screen():
 	resource_thread.start()
 	
 	#加载第二音效并打开主窗口
-	def load_audio2_resources():
+	'''def load_audio2_resources():
 		audio_path_2 = resource_path("start_sound_2.wav")
-		if os.path.exists(audio_path_2):
-			# 播放第二个音效
-			audio_thread_2 = threading.Thread(target=play_audio, args=(audio_path_2,))
-			audio_thread_2.start()
-			splash.after(1000, main_window) #延迟一秒后打开主窗口
-			splash.after(1100, splash.destroy) # 关闭启动界面
+		audio_thread_2 = threading.Thread(target=play_audio, args=(audio_path_2,))
+		audio_thread_2.start()
+		open_main_window()'''
 			
-	splash.after(3000, load_audio2_resources)  # 5秒后关闭启动画面并打开主程序窗口
+	splash.after(3000, open_main_window)  # 3秒后关闭启动画面并打开主程序窗口
 	
 	# 启动事件循环
 	splash.mainloop()
@@ -97,11 +102,6 @@ def main_window():
 	# 设置窗口图标
 	icon_path = resource_path("VDBT.ico")
 	root.iconbitmap(icon_path)
-	
-	# 设置任务栏图标（Windows 专用）
-	if os.name == "nt":	 # 仅适用于 Windows 系统
-		ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("VDBT.Tool")	# 设置 AppUserModelID
-		root.iconbitmap(icon_path)
 	
 # Make the app responsive
 	for i in range(3):
